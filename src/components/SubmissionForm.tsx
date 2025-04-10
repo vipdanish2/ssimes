@@ -112,7 +112,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       description: values.description || '',
       file: values.file,
       // Type assertion to handle the url property safely
-      url: allowUrl && 'url' in values ? values.url as string | undefined : undefined,
+      url: allowUrl && 'url' in values ? values.url : undefined,
     };
 
     submitProject(
