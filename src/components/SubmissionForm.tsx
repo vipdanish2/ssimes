@@ -105,14 +105,14 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   });
 
   const onSubmit = (values: FormValues) => {
+    // Create a properly typed submission object
     const submissionData = {
       teamId,
       type,
       title: values.title,
       description: values.description || '',
       file: values.file,
-      // Type assertion to handle the url property safely
-      url: allowUrl && 'url' in values ? values.url : undefined,
+      url: 'url' in values ? values.url : undefined,
     };
 
     submitProject(
