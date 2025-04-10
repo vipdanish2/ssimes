@@ -13,6 +13,7 @@ import { z } from 'zod';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Plus, UserPlus, UserX } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import TeamIdDisplay from './TeamIdDisplay';
 
 interface TeamMembersProps {
   teamId: string;
@@ -24,7 +25,7 @@ const addMemberSchema = z.object({
 
 const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
   const { user } = useAuth();
-  const { getTeamMembers, addTeamMember, removeTeamMember, isAddingMember, isRemovingMember } = useTeams();
+  const { getTeamMembers, addTeamMember, removeTeamMember, isAddingMember, isRemovingMember, teams } = useTeams();
   const [members, setMembers] = useState<(TeamMember & { user: any })[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -36,6 +37,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
     },
   });
 
+  const teamData = teams?.find(team => team.id === teamId);
   const isTeamLeader = members.some(
     member => member.user_id === user?.id && member.role === 'leader'
   );
@@ -104,104 +106,110 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Team Members ({memberCount}/4)</CardTitle>
-          <CardDescription>Manage your project team members</CardDescription>
-        </div>
-        {isTeamLeader && canAddMoreMembers && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <UserPlus className="h-4 w-4 mr-1" /> Add Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Team Member</DialogTitle>
-                <DialogDescription>
-                  Enter the email address of the student you want to add to your team.
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl>
-                          <Input placeholder="student@example.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <Button type="submit" disabled={isAddingMember}>
-                      {isAddingMember ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Adding...
-                        </>
+    <div className="space-y-6">
+      {teamData && isTeamLeader && (
+        <TeamIdDisplay teamId={teamId} teamName={teamData.name} />
+      )}
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Team Members ({memberCount}/4)</CardTitle>
+            <CardDescription>Manage your project team members</CardDescription>
+          </div>
+          {isTeamLeader && canAddMoreMembers && (
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <UserPlus className="h-4 w-4 mr-1" /> Add Member
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Team Member</DialogTitle>
+                  <DialogDescription>
+                    Enter the email address of the student you want to add to your team.
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input placeholder="student@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <DialogFooter>
+                      <Button type="submit" disabled={isAddingMember}>
+                        {isAddingMember ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          'Add Member'
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {members.length === 0 ? (
+              <div className="text-center p-6 text-muted-foreground">
+                No team members found. Add members to start collaborating.
+              </div>
+            ) : (
+              members.map((member) => (
+                <div
+                  key={member.id}
+                  className="flex items-center justify-between p-3 rounded-md border"
+                >
+                  <div className="flex items-center space-x-3">
+                    <Avatar>
+                      <AvatarFallback>
+                        {member.user?.name?.substring(0, 2).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{member.user?.name || 'Unknown User'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {member.user?.email} · {member.role === 'leader' ? 'Team Leader' : 'Member'}
+                      </p>
+                    </div>
+                  </div>
+                  {isTeamLeader && member.user_id !== user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveMember(member.id)}
+                      disabled={isRemovingMember}
+                    >
+                      {isRemovingMember ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        'Add Member'
+                        <UserX className="h-4 w-4 text-destructive" />
                       )}
                     </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {members.length === 0 ? (
-            <div className="text-center p-6 text-muted-foreground">
-              No team members found. Add members to start collaborating.
-            </div>
-          ) : (
-            members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between p-3 rounded-md border"
-              >
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarFallback>
-                      {member.user?.name?.substring(0, 2).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{member.user?.name || 'Unknown User'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {member.user?.email} · {member.role === 'leader' ? 'Team Leader' : 'Member'}
-                    </p>
-                  </div>
+                  )}
                 </div>
-                {isTeamLeader && member.user_id !== user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemoveMember(member.id)}
-                    disabled={isRemovingMember}
-                  >
-                    {isRemovingMember ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <UserX className="h-4 w-4 text-destructive" />
-                    )}
-                  </Button>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

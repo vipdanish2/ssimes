@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TeamCreation from '@/components/TeamCreation';
+import JoinTeamForm from '@/components/JoinTeamForm';
 import TeamMembers from '@/components/TeamMembers';
 import { Loader2, PlusCircle } from 'lucide-react';
 import SubmissionOptions from '@/components/SubmissionOptions';
@@ -33,13 +34,14 @@ const TeamDashboard: React.FC = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Create Your Team</CardTitle>
+          <CardTitle>Create or Join a Team</CardTitle>
           <CardDescription>
-            You're not part of any team yet. Create a team to start submitting project materials.
+            You're not part of any team yet. Create a new team or join an existing one to start submitting project materials.
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
           <TeamCreation />
+          <JoinTeamForm />
         </CardContent>
       </Card>
     );

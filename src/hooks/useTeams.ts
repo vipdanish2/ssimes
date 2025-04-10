@@ -49,25 +49,30 @@ export function useTeams() {
 
   // Get team members
   const getTeamMembers = async (teamId: string) => {
-    const { data, error } = await supabase
-      .from('team_members')
-      .select(`
-        *,
-        user:user_id (
-          id,
-          email,
-          name,
-          role
-        )
-      `)
-      .eq('team_id', teamId);
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select(`
+          *,
+          user:user_id (
+            id,
+            email,
+            name,
+            role
+          )
+        `)
+        .eq('team_id', teamId);
+        
+      if (error) {
+        console.error('Error fetching team members:', error);
+        throw error;
+      }
       
-    if (error) {
-      console.error('Error fetching team members:', error);
+      return data as (TeamMember & { user: any })[];
+    } catch (error) {
+      console.error('Error in getTeamMembers:', error);
       throw error;
     }
-    
-    return data as (TeamMember & { user: any })[];
   };
 
   // Create a new team
@@ -75,27 +80,40 @@ export function useTeams() {
     mutationFn: async ({ name }: { name: string }) => {
       if (!user) throw new Error('User not authenticated');
       
-      // Create the team
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .insert([
-          { name, creator_id: user.id }
-        ])
-        .select()
-        .single();
+      try {
+        // Create the team
+        const { data: team, error: teamError } = await supabase
+          .from('teams')
+          .insert([
+            { name, creator_id: user.id }
+          ])
+          .select()
+          .single();
+          
+        if (teamError) {
+          console.error('Team creation error:', teamError);
+          throw teamError;
+        }
         
-      if (teamError) throw teamError;
-      
-      // Add the creator as a team member with leader role
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert([
-          { team_id: team?.id, user_id: user.id, role: 'leader' }
-        ]);
+        if (!team) throw new Error('Failed to create team');
         
-      if (memberError) throw memberError;
-      
-      return team as Team;
+        // Add the creator as a team member with leader role
+        const { error: memberError } = await supabase
+          .from('team_members')
+          .insert([
+            { team_id: team.id, user_id: user.id, role: 'leader' }
+          ]);
+          
+        if (memberError) {
+          console.error('Member creation error:', memberError);
+          throw memberError;
+        }
+        
+        return team as Team;
+      } catch (error) {
+        console.error('Error in createTeamMutation:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams', user?.id] });
@@ -117,26 +135,34 @@ export function useTeams() {
   // Add a member to a team
   const addTeamMemberMutation = useMutation({
     mutationFn: async ({ teamId, email }: { teamId: string, email: string }) => {
-      // First, find the user by email
-      const { data: userData, error: userError } = await supabase
-        .from('users')  // This should be a view or function that you create to look up users by email
-        .select('id')
-        .eq('email', email)
-        .single();
+      try {
+        // First, find the user by email
+        const { data: users, error: userError } = await supabase
+          .from('auth.users')
+          .select('id')
+          .eq('email', email);
+          
+        if (userError || !users || users.length === 0) {
+          throw new Error('User not found with that email');
+        }
         
-      if (userError) throw new Error('User not found with that email');
-      
-      // Then add the user to the team
-      const { data, error } = await supabase
-        .from('team_members')
-        .insert([
-          { team_id: teamId, user_id: userData?.id, role: 'member' }
-        ])
-        .select();
+        const userId = users[0].id;
         
-      if (error) throw error;
-      
-      return data[0] as TeamMember;
+        // Then add the user to the team
+        const { data, error } = await supabase
+          .from('team_members')
+          .insert([
+            { team_id: teamId, user_id: userId, role: 'member' }
+          ])
+          .select();
+          
+        if (error) throw error;
+        
+        return data[0] as TeamMember;
+      } catch (error) {
+        console.error('Error in addTeamMemberMutation:', error);
+        throw error;
+      }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['team-members', variables.teamId] });

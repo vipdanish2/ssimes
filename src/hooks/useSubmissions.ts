@@ -18,18 +18,23 @@ export function useSubmissions() {
     return useQuery({
       queryKey: ['submissions', teamId],
       queryFn: async () => {
-        const { data, error } = await supabase
-          .from('submissions')
-          .select('*')
-          .eq('team_id', teamId)
-          .order('submitted_at', { ascending: false });
+        try {
+          const { data, error } = await supabase
+            .from('submissions')
+            .select('*')
+            .eq('team_id', teamId)
+            .order('submitted_at', { ascending: false });
+            
+          if (error) {
+            console.error('Error fetching submissions:', error);
+            return [];
+          }
           
-        if (error) {
-          console.error('Error fetching submissions:', error);
+          return data as Submission[];
+        } catch (error) {
+          console.error('Error in getTeamSubmissions:', error);
           return [];
         }
-        
-        return data as Submission[];
       },
       enabled: !!teamId,
     });
@@ -47,17 +52,23 @@ export function useSubmissions() {
       upsert: false
     };
     
-    // Use upload with progress tracking
-    const { data, error } = await supabase.storage
-      .from('project_files')
-      .upload(filePath, file, options);
+    try {
+      // Use upload with progress tracking
+      const { data, error } = await supabase.storage
+        .from('project_files')
+        .upload(filePath, file, options);
+        
+      // Track progress manually if needed
+      setUploadProgress(100); // Set to 100% when complete
       
-    // Track progress manually if needed
-    setUploadProgress(100); // Set to 100% when complete
-    
-    if (error) throw error;
-    
-    return data.path;
+      if (error) throw error;
+      
+      return data.path;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setUploadProgress(0);
+      throw error;
+    }
   };
 
   // Create or update submission
@@ -79,60 +90,65 @@ export function useSubmissions() {
     }) => {
       if (!user) throw new Error('User not authenticated');
       
-      let filePath = undefined;
-      
-      // If file is provided, upload it first
-      if (file) {
-        filePath = await uploadFile(file, teamId, type);
-      }
-      
-      // Check if submission already exists
-      const { data: existingSubmission, error: checkError } = await supabase
-        .from('submissions')
-        .select('*')
-        .eq('team_id', teamId)
-        .eq('type', type)
-        .maybeSingle();
+      try {
+        let filePath = undefined;
         
-      if (checkError) throw checkError;
-      
-      if (existingSubmission) {
-        // Update existing submission
-        const { data, error } = await supabase
+        // If file is provided, upload it first
+        if (file) {
+          filePath = await uploadFile(file, teamId, type);
+        }
+        
+        // Check if submission already exists
+        const { data: existingSubmission, error: checkError } = await supabase
           .from('submissions')
-          .update({ 
-            title, 
-            description, 
-            file_path: filePath || existingSubmission.file_path,
-            url: url || existingSubmission.url,
-            submitted_by: user.id,
-            version: (existingSubmission.version || 1) + 1
-          })
-          .eq('id', existingSubmission.id)
-          .select()
-          .single();
+          .select('*')
+          .eq('team_id', teamId)
+          .eq('type', type)
+          .maybeSingle();
           
-        if (error) throw error;
-        return data as Submission;
-      } else {
-        // Create new submission
-        const { data, error } = await supabase
-          .from('submissions')
-          .insert([{
-            team_id: teamId,
-            type,
-            title,
-            description,
-            file_path: filePath,
-            url,
-            submitted_by: user.id,
-            version: 1
-          }])
-          .select()
-          .single();
-          
-        if (error) throw error;
-        return data as Submission;
+        if (checkError) throw checkError;
+        
+        if (existingSubmission) {
+          // Update existing submission
+          const { data, error } = await supabase
+            .from('submissions')
+            .update({ 
+              title, 
+              description, 
+              file_path: filePath || existingSubmission.file_path,
+              url: url || existingSubmission.url,
+              submitted_by: user.id,
+              version: (existingSubmission.version || 1) + 1
+            })
+            .eq('id', existingSubmission.id)
+            .select()
+            .single();
+            
+          if (error) throw error;
+          return data as Submission;
+        } else {
+          // Create new submission
+          const { data, error } = await supabase
+            .from('submissions')
+            .insert([{
+              team_id: teamId,
+              type,
+              title,
+              description,
+              file_path: filePath,
+              url,
+              submitted_by: user.id,
+              version: 1
+            }])
+            .select()
+            .single();
+            
+          if (error) throw error;
+          return data as Submission;
+        }
+      } catch (error) {
+        console.error('Error in submitProjectMutation:', error);
+        throw error;
       }
     },
     onSuccess: (_, variables) => {

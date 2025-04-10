@@ -30,15 +30,22 @@ const TeamCreation = () => {
   });
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    createTeam(
-      { name: values.name },
-      {
-        onSuccess: () => {
-          setOpen(false);
-          form.reset();
+    try {
+      createTeam(
+        { name: values.name },
+        {
+          onSuccess: () => {
+            setOpen(false);
+            form.reset();
+          },
+          onError: (error) => {
+            console.error("Error creating team:", error);
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      console.error("Team creation error:", error);
+    }
   };
 
   return (
