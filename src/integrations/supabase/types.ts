@@ -9,7 +9,112 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      submissions: {
+        Row: {
+          description: string | null
+          file_path: string | null
+          id: string
+          submitted_at: string
+          submitted_by: string
+          team_id: string
+          title: string
+          type: string
+          url: string | null
+          version: number
+        }
+        Insert: {
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          submitted_at?: string
+          submitted_by: string
+          team_id: string
+          title: string
+          type: string
+          url?: string | null
+          version?: number
+        }
+        Update: {
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          submitted_at?: string
+          submitted_by?: string
+          team_id?: string
+          title?: string
+          type?: string
+          url?: string | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          creator_id: string
+          id: string
+          mentor_id: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          id?: string
+          mentor_id?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          id?: string
+          mentor_id?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Users, FileText, BookOpen, Calendar, ClipboardCheck } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -7,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import CardGrid from '@/components/CardGrid';
 import StatCard from '@/components/StatCard';
 import { Separator } from '@/components/ui/separator';
+import TeamDashboard from '@/components/TeamDashboard';
 
 // Sidebar items for student dashboard
 const sidebarItems = [
@@ -35,64 +35,7 @@ const sidebarItems = [
 // Demo content for tabs
 const MyTeamContent = () => (
   <div className="space-y-6">
-    <h2 className="project-heading">Team Information</h2>
-    <CardGrid columns={3}>
-      <StatCard 
-        title="Team Members" 
-        value="4" 
-        icon={<Users size={20} />}
-        description="All members active"
-      />
-      <StatCard 
-        title="Project Status" 
-        value="In Progress" 
-        icon={<ClipboardCheck size={20} />}
-        description="On track for delivery"
-      />
-      <StatCard 
-        title="Mentor" 
-        value="Dr. Jane Smith" 
-        icon={<Users size={20} />}
-        description="Next meeting: Friday, 2pm"
-      />
-    </CardGrid>
-    
-    <h3 className="section-heading mt-8">Team Members</h3>
-    <Card className="dashboard-card">
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2">
-          <div>
-            <p className="font-medium">Aiden Carter</p>
-            <p className="text-sm text-muted-foreground">Team Lead</p>
-          </div>
-          <p className="text-sm text-muted-foreground">aiden.carter@email.com</p>
-        </div>
-        <Separator />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2">
-          <div>
-            <p className="font-medium">Sophia Lee</p>
-            <p className="text-sm text-muted-foreground">Frontend Developer</p>
-          </div>
-          <p className="text-sm text-muted-foreground">sophia.lee@email.com</p>
-        </div>
-        <Separator />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2">
-          <div>
-            <p className="font-medium">Ethan Wright</p>
-            <p className="text-sm text-muted-foreground">Backend Developer</p>
-          </div>
-          <p className="text-sm text-muted-foreground">ethan.wright@email.com</p>
-        </div>
-        <Separator />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2">
-          <div>
-            <p className="font-medium">Isabella Chen</p>
-            <p className="text-sm text-muted-foreground">UX Designer</p>
-          </div>
-          <p className="text-sm text-muted-foreground">isabella.chen@email.com</p>
-        </div>
-      </div>
-    </Card>
+    <TeamDashboard />
   </div>
 );
 
