@@ -105,15 +105,18 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   });
 
   const onSubmit = (values: FormValues) => {
+    const submissionData = {
+      teamId,
+      type,
+      title: values.title,
+      description: values.description || '',
+      file: values.file,
+      // Type assertion to handle the url property safely
+      url: allowUrl && 'url' in values ? values.url as string | undefined : undefined,
+    };
+
     submitProject(
-      {
-        teamId,
-        type,
-        title: values.title,
-        description: values.description || '',
-        file: values.file,
-        url: 'url' in values ? values.url : undefined,
-      },
+      submissionData,
       {
         onSuccess: () => {
           setOpen(false);
