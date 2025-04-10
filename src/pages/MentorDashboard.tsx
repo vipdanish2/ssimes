@@ -1,6 +1,8 @@
-
 import React from 'react';
-import { Users, MessageSquare, ClipboardList, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+// ... keep existing code (other imports)
+
+// Add Calendar import
+import { Users, MessageSquare, ClipboardList, Calendar } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
 import TabView from '@/components/TabView';
 import { Card } from '@/components/ui/card';
@@ -9,6 +11,8 @@ import StatCard from '@/components/StatCard';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+// Add this import
+import TimelineDisplay from '@/components/TimelineDisplay';
 
 // Sidebar items for mentor dashboard
 const sidebarItems = [
@@ -26,6 +30,11 @@ const sidebarItems = [
     title: 'Messages',
     path: '/mentor-dashboard/messages',
     icon: <MessageSquare size={18} />,
+  },
+  {
+    title: 'Timeline',
+    path: '/mentor-dashboard/timeline',
+    icon: <Calendar size={18} />,
   },
 ];
 
@@ -356,6 +365,14 @@ const MessagesContent = () => (
   </div>
 );
 
+// Add timeline tab
+const TimelineContent = () => (
+  <div className="space-y-6">
+    <h2 className="project-heading">Project Timeline</h2>
+    <TimelineDisplay />
+  </div>
+);
+
 const MentorDashboard = () => {
   const tabs = [
     {
@@ -373,6 +390,11 @@ const MentorDashboard = () => {
       label: 'Messages',
       content: <MessagesContent />,
     },
+    {
+      id: 'timeline',
+      label: 'Timeline',
+      content: <TimelineContent />,
+    }
   ];
 
   return (
@@ -383,3 +405,4 @@ const MentorDashboard = () => {
 };
 
 export default MentorDashboard;
+// ... keep existing code (for the rest of the component)

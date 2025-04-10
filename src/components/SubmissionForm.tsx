@@ -83,7 +83,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       title: values.title,
       description: values.description || '',
       file: values.file,
-      url: allowUrl && 'url' in values ? values.url : undefined,
+      url: allowUrl && 'url' in values ? (values.url as string) : undefined,
     };
 
     submitProject(

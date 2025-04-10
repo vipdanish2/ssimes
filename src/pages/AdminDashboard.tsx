@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Users, Bell, Settings, ClipboardList, ArrowUpRight, ArrowDownRight, UserCheck, FileCheck, AlertCircle } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -11,6 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// Add this import
+import TimelineEditor from '@/components/admin/TimelineEditor';
 
 // Sidebar items for admin dashboard
 const sidebarItems = [
@@ -385,7 +387,7 @@ const AnnouncementsContent = () => (
         </div>
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>Visible to: Mentors</span>
-          <span>Expired: October 5, 2025</span>
+          <span>Expires: October 5, 2025</span>
         </div>
       </Card>
     </CardGrid>
@@ -436,6 +438,11 @@ const SettingsContent = () => (
           <label className="text-sm font-medium mb-1 block">Contact Email</label>
           <Input defaultValue="projects@ssiems.edu" />
         </div>
+      </div>
+      
+      <h3 className="text-lg font-semibold mt-8 mb-4">Timeline Settings</h3>
+      <div className="border rounded-lg p-4 mb-6">
+        <TimelineEditor />
       </div>
       
       <h3 className="text-lg font-semibold mt-8 mb-4">Timeline Settings</h3>

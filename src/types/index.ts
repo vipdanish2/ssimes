@@ -38,3 +38,14 @@ export interface SubmissionFile {
   type: string;
   file: File;
 }
+
+export interface TimelineEvent {
+  id: string;
+  title: string;
+  description?: string;
+  event_date: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  created_by: string;
+}

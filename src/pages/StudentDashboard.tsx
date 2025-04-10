@@ -7,6 +7,7 @@ import CardGrid from '@/components/CardGrid';
 import StatCard from '@/components/StatCard';
 import { Separator } from '@/components/ui/separator';
 import TeamDashboard from '@/components/TeamDashboard';
+import TimelineDisplay from '@/components/TimelineDisplay';
 
 // Sidebar items for student dashboard
 const sidebarItems = [
@@ -145,91 +146,7 @@ const ResourcesContent = () => (
 const TimelineContent = () => (
   <div className="space-y-6">
     <h2 className="project-heading">Project Timeline</h2>
-    <Card className="dashboard-card">
-      <div className="relative">
-        <div className="absolute top-0 bottom-0 left-7 w-0.5 bg-border"></div>
-        
-        <div className="relative flex gap-4 pb-8">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 z-10">
-            <Calendar size={24} className="text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Project Kickoff</h3>
-            <p className="text-sm text-muted-foreground mb-2">September 5, 2025</p>
-            <div className="bg-secondary p-3 rounded-md text-sm">
-              <p>Team formation and project topic selection deadline.</p>
-            </div>
-            <div className="mt-2 bg-emerald-500/20 text-emerald-500 px-3 py-1 rounded-full text-xs inline-flex">
-              Completed
-            </div>
-          </div>
-        </div>
-        
-        <div className="relative flex gap-4 pb-8">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 z-10">
-            <FileText size={24} className="text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Project Proposal</h3>
-            <p className="text-sm text-muted-foreground mb-2">October 15, 2025</p>
-            <div className="bg-secondary p-3 rounded-md text-sm">
-              <p>Submit initial project proposal document.</p>
-            </div>
-            <div className="mt-2 bg-emerald-500/20 text-emerald-500 px-3 py-1 rounded-full text-xs inline-flex">
-              Completed
-            </div>
-          </div>
-        </div>
-        
-        <div className="relative flex gap-4 pb-8">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 z-10">
-            <ClipboardCheck size={24} className="text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">First Review</h3>
-            <p className="text-sm text-muted-foreground mb-2">December 1, 2025</p>
-            <div className="bg-secondary p-3 rounded-md text-sm">
-              <p>First progress review presentation with mentor.</p>
-            </div>
-            <div className="mt-2 bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-xs inline-flex">
-              In Progress
-            </div>
-          </div>
-        </div>
-        
-        <div className="relative flex gap-4 pb-8">
-          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0 z-10">
-            <FileText size={24} className="text-muted-foreground" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Progress Report</h3>
-            <p className="text-sm text-muted-foreground mb-2">January 10, 2026</p>
-            <div className="bg-secondary p-3 rounded-md text-sm">
-              <p>Submit detailed progress report document.</p>
-            </div>
-            <div className="mt-2 bg-neutral-500/20 text-neutral-500 px-3 py-1 rounded-full text-xs inline-flex">
-              Upcoming
-            </div>
-          </div>
-        </div>
-        
-        <div className="relative flex gap-4">
-          <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0 z-10">
-            <FileText size={24} className="text-muted-foreground" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold">Final Submission</h3>
-            <p className="text-sm text-muted-foreground mb-2">April 20, 2026</p>
-            <div className="bg-secondary p-3 rounded-md text-sm">
-              <p>Submit final project report and code.</p>
-            </div>
-            <div className="mt-2 bg-neutral-500/20 text-neutral-500 px-3 py-1 rounded-full text-xs inline-flex">
-              Upcoming
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+    <TimelineDisplay />
   </div>
 );
 
