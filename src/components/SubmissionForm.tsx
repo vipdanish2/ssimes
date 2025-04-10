@@ -6,12 +6,15 @@ import { z } from 'zod';
 import { useSubmissions } from '@/hooks/useSubmissions';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Upload, FileText, Link as LinkIcon } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
 import { Submission } from '@/types';
+import { createSubmissionSchema } from '@/utils/submissionFormSchema';
+import FileUploadField from '@/components/form/FileUploadField';
+import UrlField from '@/components/form/UrlField';
+import SubmissionProgress from '@/components/form/SubmissionProgress';
+import SubmissionButton from '@/components/form/SubmissionButton';
 
 interface SubmissionFormProps {
   teamId: string;
@@ -22,58 +25,6 @@ interface SubmissionFormProps {
   acceptFiles?: string;
   allowUrl?: boolean;
 }
-
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-
-const createSubmissionSchema = (
-  type: Submission['type'], 
-  allowUrl: boolean, 
-  requireFile: boolean
-) => {
-  // Base schema with title and description
-  const baseSchema = z.object({
-    title: z.string().min(3, { message: "Title must be at least 3 characters" }),
-    description: z.string().optional(),
-  });
-
-  // File validation schema
-  const fileSchema = requireFile
-    ? z.object({
-        file: z.instanceof(File)
-          .refine(file => file.size <= MAX_FILE_SIZE, {
-            message: `File size must be less than 20MB`,
-          })
-      })
-    : z.object({
-        file: z.instanceof(File)
-          .refine(file => !file || file.size <= MAX_FILE_SIZE, {
-            message: `File size must be less than 20MB`,
-          })
-          .optional()
-      });
-
-  // URL validation schema - Only include if allowUrl is true
-  const urlSchema = allowUrl
-    ? z.object({
-        url: z.string().url({ message: "Please enter a valid URL" }).optional(),
-      })
-    : z.object({});
-
-  // Combine schemas and add refinement for file/url requirement
-  return baseSchema.merge(fileSchema).merge(urlSchema)
-    .refine(
-      data => {
-        if (requireFile && !allowUrl) return !!data.file;
-        if (!requireFile && allowUrl) return !!data.url;
-        if (requireFile && allowUrl) return !!data.file || !!data.url;
-        return true;
-      },
-      {
-        message: "You must provide either a file or a URL",
-        path: ["file"],
-      }
-    );
-};
 
 const SubmissionForm: React.FC<SubmissionFormProps> = ({
   teamId,
@@ -86,7 +37,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
 }) => {
   const { submitProject, isSubmitting, uploadProgress } = useSubmissions();
   const [open, setOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   const requireFile = type === 'abstract' || type === 'presentation' || type === 'report';
   
@@ -111,7 +61,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       type,
       title: values.title,
       description: values.description || '',
-      file: values.file,
+      file: values.file as File | undefined,
       url: allowUrl && 'url' in values ? values.url : undefined,
     };
 
@@ -121,18 +71,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         onSuccess: () => {
           setOpen(false);
           form.reset();
-          setSelectedFile(null);
         }
       }
     );
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      form.setValue('file', file);
-    }
   };
 
   return (
@@ -185,77 +126,30 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
             />
             
             {requireFile && (
-              <FormField
-                control={form.control}
-                name="file"
-                render={({ field: { value, onChange, ...fieldProps } }) => (
-                  <FormItem>
-                    <FormLabel>File Upload</FormLabel>
-                    <FormControl>
-                      <div className="grid w-full items-center gap-1.5">
-                        <Input
-                          type="file"
-                          accept={acceptFiles}
-                          onChange={handleFileChange}
-                          {...fieldProps}
-                          className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      {selectedFile ? `Selected: ${selectedFile.name}` : `Upload your ${type} file (max 20MB)`}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FileUploadField
+                form={form}
+                label="File Upload"
+                description={`Upload your ${type} file (max 20MB)`}
+                acceptFiles={acceptFiles}
+                required={requireFile && !allowUrl}
               />
             )}
             
             {allowUrl && (
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{requireFile ? 'URL (Optional)' : 'URL'}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://..." 
-                        {...field} 
-                        type="url" 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {type === 'video' && 'Provide a YouTube or Google Drive link to your video.'}
-                      {type === 'github' && 'Link to your GitHub repository.'}
-                      {type === 'demo' && 'Link to your live demo site (if available).'}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <UrlField
+                form={form}
+                type={type}
+                required={!requireFile && allowUrl}
               />
             )}
             
-            {isSubmitting && uploadProgress > 0 && (
-              <div className="space-y-2">
-                <Progress value={uploadProgress} />
-                <p className="text-sm text-center text-muted-foreground">
-                  Uploading: {Math.round(uploadProgress)}%
-                </p>
-              </div>
-            )}
+            <SubmissionProgress
+              isSubmitting={isSubmitting}
+              uploadProgress={uploadProgress}
+            />
             
             <DialogFooter>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit'
-                )}
-              </Button>
+              <SubmissionButton isSubmitting={isSubmitting} />
             </DialogFooter>
           </form>
         </Form>
