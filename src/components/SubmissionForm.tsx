@@ -52,7 +52,7 @@ const createSubmissionSchema = (
           .optional()
       });
 
-  // URL validation schema
+  // URL validation schema - Only include if allowUrl is true
   const urlSchema = allowUrl
     ? z.object({
         url: z.string().url({ message: "Please enter a valid URL" }).optional(),
@@ -92,7 +92,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   
   const schema = createSubmissionSchema(type, allowUrl, requireFile);
   
-  // Define the form type based on the created schema
+  // Define the form type using zod inference
   type FormValues = z.infer<typeof schema>;
   
   const form = useForm<FormValues>({
@@ -110,9 +110,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
         teamId,
         type,
         title: values.title,
-        description: values.description,
+        description: values.description || '',
         file: values.file,
-        url: values.url,
+        url: 'url' in values ? values.url : undefined,
       },
       {
         onSuccess: () => {
