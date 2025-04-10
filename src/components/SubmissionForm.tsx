@@ -70,12 +70,19 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     setSubmitError(null);
     
     // Create a properly typed submission object
-    const submissionData = {
+    const submissionData: {
+      teamId: string;
+      type: Submission['type'];
+      title: string;
+      description: string;
+      file?: File;
+      url?: string;
+    } = {
       teamId,
       type,
       title: values.title,
       description: values.description || '',
-      file: values.file as File | undefined,
+      file: values.file,
       url: allowUrl && 'url' in values ? values.url : undefined,
     };
 

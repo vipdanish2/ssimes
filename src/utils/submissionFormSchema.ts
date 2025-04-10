@@ -40,17 +40,33 @@ export const createSubmissionSchema = (
     : z.object({});
 
   // Combine schemas and add refinement for file/url requirement
-  return baseSchema.merge(fileSchema).merge(urlSchema)
-    .refine(
-      data => {
-        if (requireFile && !allowUrl) return !!data.file;
-        if (!requireFile && allowUrl) return !!data.url;
-        if (requireFile && allowUrl) return !!data.file || !!('url' in data && data.url);
-        return true;
-      },
+  const combinedSchema = baseSchema.merge(fileSchema).merge(urlSchema);
+  
+  if (requireFile && allowUrl) {
+    return combinedSchema.refine(
+      data => !!data.file || !!(data.url && data.url.trim()),
       {
         message: "You must provide either a file or a URL",
         path: ["file"],
       }
     );
+  } else if (requireFile && !allowUrl) {
+    return combinedSchema.refine(
+      data => !!data.file,
+      {
+        message: "You must provide a file",
+        path: ["file"],
+      }
+    );
+  } else if (!requireFile && allowUrl) {
+    return combinedSchema.refine(
+      data => !!(data.url && data.url.trim()),
+      {
+        message: "You must provide a URL",
+        path: ["url"],
+      }
+    );
+  }
+  
+  return combinedSchema;
 };
