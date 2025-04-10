@@ -30,29 +30,37 @@ const createSubmissionSchema = (
   allowUrl: boolean, 
   requireFile: boolean
 ) => {
-  const fileValidation = z.object({
-    file: requireFile
-      ? z.instanceof(File)
-        .refine(file => file.size <= MAX_FILE_SIZE, {
-          message: `File size must be less than 20MB`,
-        })
-      : z.instanceof(File)
-        .refine(file => !file || file.size <= MAX_FILE_SIZE, {
-          message: `File size must be less than 20MB`,
-        })
-        .optional(),
+  // Base schema with title and description
+  const baseSchema = z.object({
+    title: z.string().min(3, { message: "Title must be at least 3 characters" }),
+    description: z.string().optional(),
   });
 
-  const urlValidation = allowUrl
+  // File validation schema
+  const fileSchema = requireFile
+    ? z.object({
+        file: z.instanceof(File)
+          .refine(file => file.size <= MAX_FILE_SIZE, {
+            message: `File size must be less than 20MB`,
+          })
+      })
+    : z.object({
+        file: z.instanceof(File)
+          .refine(file => !file || file.size <= MAX_FILE_SIZE, {
+            message: `File size must be less than 20MB`,
+          })
+          .optional()
+      });
+
+  // URL validation schema
+  const urlSchema = allowUrl
     ? z.object({
         url: z.string().url({ message: "Please enter a valid URL" }).optional(),
       })
     : z.object({});
 
-  return z.object({
-    title: z.string().min(3, { message: "Title must be at least 3 characters" }),
-    description: z.string().optional(),
-  }).and(fileValidation).and(urlValidation)
+  // Combine schemas and add refinement for file/url requirement
+  return baseSchema.merge(fileSchema).merge(urlSchema)
     .refine(
       data => {
         if (requireFile && !allowUrl) return !!data.file;
@@ -84,16 +92,19 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   
   const schema = createSubmissionSchema(type, allowUrl, requireFile);
   
-  const form = useForm<z.infer<typeof schema>>({
+  // Define the form type based on the created schema
+  type FormValues = z.infer<typeof schema>;
+  
+  const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       title: '',
       description: '',
-      url: '',
+      ...(allowUrl ? { url: '' } : {})
     },
   });
 
-  const onSubmit = (values: z.infer<typeof schema>) => {
+  const onSubmit = (values: FormValues) => {
     submitProject(
       {
         teamId,

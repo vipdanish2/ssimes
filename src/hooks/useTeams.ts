@@ -28,7 +28,7 @@ export function useTeams() {
         return [];
       }
       
-      if (!teamMemberships.length) return [];
+      if (!teamMemberships?.length) return [];
       
       const teamIds = teamMemberships.map(tm => tm.team_id);
       
@@ -90,7 +90,7 @@ export function useTeams() {
       const { error: memberError } = await supabase
         .from('team_members')
         .insert([
-          { team_id: team.id, user_id: user.id, role: 'leader' }
+          { team_id: team?.id, user_id: user.id, role: 'leader' }
         ]);
         
       if (memberError) throw memberError;
@@ -130,7 +130,7 @@ export function useTeams() {
       const { data, error } = await supabase
         .from('team_members')
         .insert([
-          { team_id: teamId, user_id: userData.id, role: 'member' }
+          { team_id: teamId, user_id: userData?.id, role: 'member' }
         ])
         .select();
         

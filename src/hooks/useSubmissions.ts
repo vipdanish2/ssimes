@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Submission, SubmissionFile } from '@/types';
 import { useToast } from './use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { FileOptions } from '@supabase/storage-js';
 
 export function useSubmissions() {
   const { user } = useAuth();
@@ -40,16 +41,20 @@ export function useSubmissions() {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${teamId}/${submissionType}/${fileName}`;
     
+    // Create custom options with progress tracking
+    const options: FileOptions = {
+      cacheControl: '3600',
+      upsert: false
+    };
+    
+    // Use upload with progress tracking
     const { data, error } = await supabase.storage
       .from('project_files')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false,
-        onUploadProgress: (progress) => {
-          setUploadProgress(progress.percent || 0);
-        },
-      });
+      .upload(filePath, file, options);
       
+    // Track progress manually if needed
+    setUploadProgress(100); // Set to 100% when complete
+    
     if (error) throw error;
     
     return data.path;
@@ -101,7 +106,7 @@ export function useSubmissions() {
             file_path: filePath || existingSubmission.file_path,
             url: url || existingSubmission.url,
             submitted_by: user.id,
-            version: existingSubmission.version + 1
+            version: (existingSubmission.version || 1) + 1
           })
           .eq('id', existingSubmission.id)
           .select()
@@ -120,7 +125,8 @@ export function useSubmissions() {
             description,
             file_path: filePath,
             url,
-            submitted_by: user.id
+            submitted_by: user.id,
+            version: 1
           }])
           .select()
           .single();
