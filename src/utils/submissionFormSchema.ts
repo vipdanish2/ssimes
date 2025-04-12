@@ -1,4 +1,8 @@
+
 import { z } from 'zod';
+
+// Define maximum file sizes for different submission types
+export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB max file size
 
 export const submissionFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -28,6 +32,36 @@ export const submissionFormSchema = z.object({
 
 export type SubmissionFormValues = z.infer<typeof submissionFormSchema>;
 
+// Export a function to create a schema based on submission type
+export const createSubmissionSchema = (
+  type: string, 
+  allowUrl: boolean, 
+  requireFile: boolean
+) => {
+  const baseSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().optional(),
+  });
+
+  // Add URL validation if allowed
+  const schemaWithUrl = allowUrl 
+    ? baseSchema.extend({
+        url: requireFile 
+          ? z.string().url("Please enter a valid URL").optional()
+          : z.string().url("Please enter a valid URL")
+      })
+    : baseSchema;
+
+  // Add file validation if required
+  const finalSchema = requireFile 
+    ? schemaWithUrl.extend({
+        file: z.instanceof(File)
+      })
+    : schemaWithUrl;
+
+  return finalSchema;
+};
+
 export const getSubmissionTypeOptions = () => [
   { value: "abstract", label: "Abstract" },
   { value: "presentation", label: "Presentation" },
@@ -47,16 +81,18 @@ export const getSubmissionRequirements = (type: string) => {
     case 'abstract':
       return {
         fileTypes: '.pdf,.doc,.docx',
-        description: 'Upload a PDF or Word document (max 5MB)',
+        description: `Upload a PDF or Word document (max ${formatFileSize(5 * 1024 * 1024)})`,
         requiresFile: true,
         requiresUrl: false,
+        maxSize: 5 * 1024 * 1024 // 5MB
       };
     case 'presentation':
       return {
         fileTypes: '.pdf,.ppt,.pptx',
-        description: 'Upload a PDF or PowerPoint presentation (max 10MB)',
+        description: `Upload a PDF or PowerPoint presentation (max ${formatFileSize(10 * 1024 * 1024)})`,
         requiresFile: true,
         requiresUrl: false,
+        maxSize: 10 * 1024 * 1024 // 10MB
       };
     case 'video':
       return {
@@ -64,6 +100,7 @@ export const getSubmissionRequirements = (type: string) => {
         description: 'Provide a link to your video (YouTube, Vimeo, etc.)',
         requiresFile: false,
         requiresUrl: true,
+        maxSize: 0
       };
     case 'github':
       return {
@@ -71,20 +108,23 @@ export const getSubmissionRequirements = (type: string) => {
         description: 'Provide a link to your GitHub repository',
         requiresFile: false,
         requiresUrl: true,
+        maxSize: 0
       };
     case 'demo':
       return {
         fileTypes: '.zip,.rar',
-        description: 'Upload a compressed file containing your demo (max 50MB)',
+        description: `Upload a compressed file containing your demo (max ${formatFileSize(MAX_FILE_SIZE)})`,
         requiresFile: true,
         requiresUrl: false,
+        maxSize: MAX_FILE_SIZE
       };
     case 'report':
       return {
         fileTypes: '.pdf,.doc,.docx',
-        description: 'Upload a PDF or Word document (max 10MB)',
+        description: `Upload a PDF or Word document (max ${formatFileSize(10 * 1024 * 1024)})`,
         requiresFile: true,
         requiresUrl: false,
+        maxSize: 10 * 1024 * 1024 // 10MB
       };
     default:
       return {
@@ -92,6 +132,16 @@ export const getSubmissionRequirements = (type: string) => {
         description: '',
         requiresFile: false,
         requiresUrl: false,
+        maxSize: 0
       };
   }
+};
+
+// Helper function to format file sizes
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
