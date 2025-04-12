@@ -13,59 +13,63 @@ import StudentDashboard from "@/pages/StudentDashboard";
 import MentorDashboard from "@/pages/MentorDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/NotFound";
+import React from "react";
 
+// Create a new QueryClient instance outside of the component
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            {/* Protected student routes */}
-            <Route 
-              path="/dashboard/*" 
-              element={
-                <ProtectedRoute allowedRoles={['student']}>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Protected mentor routes */}
-            <Route 
-              path="/mentor-dashboard/*" 
-              element={
-                <ProtectedRoute allowedRoles={['mentor']}>
-                  <MentorDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Protected admin routes */}
-            <Route 
-              path="/admin-dashboard/*" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              
+              {/* Protected student routes */}
+              <Route 
+                path="/dashboard/*" 
+                element={
+                  <ProtectedRoute allowedRoles={['student']}>
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Protected mentor routes */}
+              <Route 
+                path="/mentor-dashboard/*" 
+                element={
+                  <ProtectedRoute allowedRoles={['mentor']}>
+                    <MentorDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Protected admin routes */}
+              <Route 
+                path="/admin-dashboard/*" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;

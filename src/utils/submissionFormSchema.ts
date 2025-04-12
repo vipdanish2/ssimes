@@ -1,72 +1,97 @@
-
 import { z } from 'zod';
-import { Submission } from '@/types';
 
-export const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-
-export const createSubmissionSchema = (
-  type: Submission['type'], 
-  allowUrl: boolean, 
-  requireFile: boolean
-) => {
-  // Base schema with title and description
-  const baseSchema = z.object({
-    title: z.string().min(3, { message: "Title must be at least 3 characters" })
-      .max(100, { message: "Title must be less than 100 characters" }),
-    description: z.string().max(500, { message: "Description must be less than 500 characters" }).optional(),
-  });
-
-  // File validation schema
-  const fileSchema = requireFile
-    ? z.object({
-        file: z.instanceof(File)
-          .refine(file => file.size <= MAX_FILE_SIZE, {
-            message: `File size must be less than 20MB`,
-          })
-      })
-    : z.object({
-        file: z.instanceof(File)
-          .refine(file => !file || file.size <= MAX_FILE_SIZE, {
-            message: `File size must be less than 20MB`,
-          })
-          .optional()
-      });
-
-  // URL validation schema - Only include if allowUrl is true
-  const urlSchema = allowUrl
-    ? z.object({
-        url: z.string().url({ message: "Please enter a valid URL" }).optional(),
-      })
-    : z.object({});
-
-  // Combine schemas and add refinement for file/url requirement
-  const combinedSchema = baseSchema.merge(fileSchema).merge(urlSchema);
-  
-  if (requireFile && allowUrl) {
-    return combinedSchema.refine(
-      data => !!data.file || !!(data.url && data.url.trim()),
-      {
-        message: "You must provide either a file or a URL",
-        path: ["file"],
-      }
-    );
-  } else if (requireFile && !allowUrl) {
-    return combinedSchema.refine(
-      data => !!data.file,
-      {
-        message: "You must provide a file",
-        path: ["file"],
-      }
-    );
-  } else if (!requireFile && allowUrl) {
-    return combinedSchema.refine(
-      data => !!(data.url && data.url.trim()),
-      {
-        message: "You must provide a URL",
-        path: ["url"],
-      }
-    );
+export const submissionFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  type: z.enum(["abstract", "presentation", "video", "github", "demo", "report"]),
+  url: z.string().url("Please enter a valid URL").optional(),
+  file: z.instanceof(File).optional(),
+}).refine(data => {
+  // For these submission types, require a URL
+  if (['github', 'video'].includes(data.type)) {
+    return !!data.url;
   }
-  
-  return combinedSchema;
+  return true;
+}, {
+  message: "URL is required for this submission type",
+  path: ['url']
+}).refine(data => {
+  // For these submission types, require a file
+  if (['abstract', 'presentation', 'report', 'demo'].includes(data.type)) {
+    return !!data.file;
+  }
+  return true;
+}, {
+  message: "File is required for this submission type",
+  path: ['file']
+});
+
+export type SubmissionFormValues = z.infer<typeof submissionFormSchema>;
+
+export const getSubmissionTypeOptions = () => [
+  { value: "abstract", label: "Abstract" },
+  { value: "presentation", label: "Presentation" },
+  { value: "video", label: "Video" },
+  { value: "github", label: "GitHub Repository" },
+  { value: "demo", label: "Demo" },
+  { value: "report", label: "Report" },
+];
+
+export const getSubmissionTypeLabel = (type: string) => {
+  const option = getSubmissionTypeOptions().find(opt => opt.value === type);
+  return option ? option.label : type;
+};
+
+export const getSubmissionRequirements = (type: string) => {
+  switch (type) {
+    case 'abstract':
+      return {
+        fileTypes: '.pdf,.doc,.docx',
+        description: 'Upload a PDF or Word document (max 5MB)',
+        requiresFile: true,
+        requiresUrl: false,
+      };
+    case 'presentation':
+      return {
+        fileTypes: '.pdf,.ppt,.pptx',
+        description: 'Upload a PDF or PowerPoint presentation (max 10MB)',
+        requiresFile: true,
+        requiresUrl: false,
+      };
+    case 'video':
+      return {
+        fileTypes: '',
+        description: 'Provide a link to your video (YouTube, Vimeo, etc.)',
+        requiresFile: false,
+        requiresUrl: true,
+      };
+    case 'github':
+      return {
+        fileTypes: '',
+        description: 'Provide a link to your GitHub repository',
+        requiresFile: false,
+        requiresUrl: true,
+      };
+    case 'demo':
+      return {
+        fileTypes: '.zip,.rar',
+        description: 'Upload a compressed file containing your demo (max 50MB)',
+        requiresFile: true,
+        requiresUrl: false,
+      };
+    case 'report':
+      return {
+        fileTypes: '.pdf,.doc,.docx',
+        description: 'Upload a PDF or Word document (max 10MB)',
+        requiresFile: true,
+        requiresUrl: false,
+      };
+    default:
+      return {
+        fileTypes: '',
+        description: '',
+        requiresFile: false,
+        requiresUrl: false,
+      };
+  }
 };

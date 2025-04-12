@@ -41,11 +41,16 @@ export const useTimeline = () => {
   // Create a new timeline event
   const createTimelineEvent = async (eventData: Omit<TimelineEvent, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
     try {
+      const userResponse = await supabase.auth.getUser();
+      if (!userResponse.data.user) {
+        throw new Error('User not authenticated');
+      }
+
       const { data, error } = await supabase
         .from('timeline_events')
         .insert({
           ...eventData,
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          created_by: userResponse.data.user.id,
         })
         .select();
 
