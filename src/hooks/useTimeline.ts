@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { TimelineEvent } from '@/types';
 
 export const useTimeline = () => {
@@ -9,6 +10,7 @@ export const useTimeline = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   // Fetch all timeline events
   const fetchTimelineEvents = async () => {
@@ -40,17 +42,16 @@ export const useTimeline = () => {
 
   // Create a new timeline event
   const createTimelineEvent = async (eventData: Omit<TimelineEvent, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
-    try {
-      const userResponse = await supabase.auth.getUser();
-      if (!userResponse.data.user) {
-        throw new Error('User not authenticated');
-      }
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
+    try {
       const { data, error } = await supabase
         .from('timeline_events')
         .insert({
           ...eventData,
-          created_by: userResponse.data.user.id,
+          created_by: user.id,
         })
         .select();
 

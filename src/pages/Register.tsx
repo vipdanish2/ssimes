@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, TestTube } from 'lucide-react';
 import { useAuth, UserRole } from '@/context/AuthContext';
 
 const formSchema = z.object({
@@ -51,10 +51,52 @@ const Register = () => {
         title: "Success",
         description: "Your account has been created successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: error.message || "Failed to create account. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  // Quick create test account function
+  const createTestAccount = async (role: UserRole) => {
+    const testAccounts = {
+      student: {
+        name: 'Test Student',
+        email: 'student@test.com',
+        password: 'password123',
+        role: 'student' as UserRole,
+      },
+      mentor: {
+        name: 'Test Mentor',
+        email: 'mentor@test.com',
+        password: 'password123',
+        role: 'mentor' as UserRole,
+      },
+      admin: {
+        name: 'Test Admin',
+        email: 'admin@test.com',
+        password: 'password123',
+        role: 'admin' as UserRole,
+      },
+    };
+
+    const account = testAccounts[role];
+    setIsLoading(true);
+    
+    try {
+      await signup(account.email, account.password, account.name, account.role);
+      toast({
+        title: "Test Account Created",
+        description: `Test ${role} account created successfully!`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || `Failed to create test ${role} account.`,
         variant: "destructive",
       });
       setIsLoading(false);
@@ -73,7 +115,7 @@ const Register = () => {
               Enter your information to create your account
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -187,6 +229,46 @@ const Register = () => {
                 </Button>
               </form>
             </Form>
+
+            {/* Quick Test Account Creation */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <TestTube className="h-4 w-4" />
+                <span>Quick Test Account Creation</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => createTestAccount('student')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Create Student
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => createTestAccount('mentor')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Create Mentor
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => createTestAccount('admin')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Create Admin
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Creates test accounts with credentials: email@test.com / password123
+              </p>
+            </div>
           </CardContent>
           <CardFooter>
             <div className="text-center w-full text-sm">

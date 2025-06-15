@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, TestTube } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
@@ -41,10 +41,35 @@ const Login = () => {
         title: "Success",
         description: "You've been logged in successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Invalid email or password.",
+        description: error.message || "Invalid email or password.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  // Test login functions
+  const testLogin = async (role: 'student' | 'mentor' | 'admin') => {
+    const testCredentials = {
+      student: { email: 'student@test.com', password: 'password123' },
+      mentor: { email: 'mentor@test.com', password: 'password123' },
+      admin: { email: 'admin@test.com', password: 'password123' },
+    };
+
+    setIsLoading(true);
+    try {
+      await login(testCredentials[role].email, testCredentials[role].password);
+      toast({
+        title: "Test Login Successful",
+        description: `Logged in as ${role}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Test Login Failed",
+        description: `Please create test ${role} account first or use the signup form.`,
         variant: "destructive",
       });
       setIsLoading(false);
@@ -63,7 +88,7 @@ const Login = () => {
               Enter your credentials to sign in to your account
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -117,6 +142,46 @@ const Login = () => {
                 </Button>
               </form>
             </Form>
+
+            {/* Test Login Section */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <TestTube className="h-4 w-4" />
+                <span>Test Login Buttons (for development)</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => testLogin('student')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Student
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => testLogin('mentor')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Mentor
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => testLogin('admin')}
+                  disabled={isLoading}
+                  className="text-xs"
+                >
+                  Admin
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground text-center">
+                Create test accounts using the signup form first
+              </p>
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm">
@@ -126,12 +191,6 @@ const Login = () => {
               <Link to="/register" className="text-primary hover:underline">
                 Sign up
               </Link>
-            </div>
-            <div className="text-center text-xs text-muted-foreground">
-              <p>For demo purposes, use:</p>
-              <p>student@example.com / password</p>
-              <p>mentor@example.com / password</p>
-              <p>admin@example.com / password</p>
             </div>
           </CardFooter>
         </Card>
