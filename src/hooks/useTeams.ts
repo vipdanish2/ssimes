@@ -237,29 +237,42 @@ export function useTeams() {
     return useQuery({
       queryKey: ['team-members', teamId],
       queryFn: async () => {
-        const { data, error } = await supabase
+        // First get team members
+        const { data: members, error: membersError } = await supabase
           .from('team_members')
-          .select(`
-            id,
-            team_id,
-            user_id,
-            role,
-            joined_at,
-            profiles!team_members_user_id_fkey (
-              id,
-              name,
-              email,
-              role
-            )
-          `)
+          .select('id, team_id, user_id, role, joined_at')
           .eq('team_id', teamId);
 
-        if (error) throw error;
+        if (membersError) throw membersError;
 
-        return data.map(member => ({
-          ...member,
-          user: member.profiles,
-        })) as (TeamMember & { user: any })[];
+        if (!members || members.length === 0) {
+          return [];
+        }
+
+        // Then get profile information for each member
+        const userIds = members.map(member => member.user_id);
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, name, email, role')
+          .in('id', userIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combine the data
+        const membersWithProfiles = members.map(member => {
+          const profile = profiles?.find(p => p.id === member.user_id);
+          return {
+            ...member,
+            user: profile || {
+              id: member.user_id,
+              name: 'Unknown User',
+              email: 'unknown@example.com',
+              role: 'student'
+            }
+          };
+        });
+
+        return membersWithProfiles as (TeamMember & { user: any })[];
       },
       enabled: !!teamId,
     });
