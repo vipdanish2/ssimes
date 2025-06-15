@@ -147,6 +147,91 @@ export function useTeams() {
     },
   });
 
+  // Add team member by email
+  const addTeamMemberMutation = useMutation({
+    mutationFn: async ({ teamId, email }: { teamId: string; email: string }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      // Find user by email
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, name')
+        .eq('email', email)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('User not found with this email address');
+      }
+
+      // Check if user is already a member
+      const { data: existingMember } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', teamId)
+        .eq('user_id', profile.id)
+        .single();
+
+      if (existingMember) {
+        throw new Error('User is already a member of this team');
+      }
+
+      // Add user to team
+      const { error: memberError } = await supabase
+        .from('team_members')
+        .insert([{
+          team_id: teamId,
+          user_id: profile.id,
+          role: 'member',
+        }]);
+
+      if (memberError) throw memberError;
+
+      return profile;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      toast({
+        title: 'Success',
+        description: 'Team member added successfully!',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add team member',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Remove team member
+  const removeTeamMemberMutation = useMutation({
+    mutationFn: async ({ memberId, teamId }: { memberId: string; teamId: string }) => {
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('team_members')
+        .delete()
+        .eq('id', memberId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      toast({
+        title: 'Success',
+        description: 'Team member removed successfully!',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to remove team member',
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Get team members for a specific team
   const getTeamMembers = (teamId: string) => {
     return useQuery({
@@ -160,7 +245,7 @@ export function useTeams() {
             user_id,
             role,
             joined_at,
-            profiles:user_id (
+            profiles!team_members_user_id_fkey (
               id,
               name,
               email,
@@ -188,6 +273,10 @@ export function useTeams() {
     isCreatingTeam: createTeamMutation.isPending,
     joinTeam: joinTeamMutation.mutate,
     isJoiningTeam: joinTeamMutation.isPending,
+    addTeamMember: addTeamMemberMutation.mutate,
+    isAddingMember: addTeamMemberMutation.isPending,
+    removeTeamMember: removeTeamMemberMutation.mutate,
+    isRemovingMember: removeTeamMemberMutation.isPending,
     getTeamMembers,
   };
 }

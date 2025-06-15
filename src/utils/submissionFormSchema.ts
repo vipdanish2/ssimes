@@ -38,28 +38,28 @@ export const createSubmissionSchema = (
   allowUrl: boolean, 
   requireFile: boolean
 ) => {
-  const baseSchema = z.object({
+  let baseFields: any = {
     title: z.string().min(1, "Title is required"),
     description: z.string().optional(),
-  });
+  };
 
-  // Add URL validation if allowed
-  const schemaWithUrl = allowUrl 
-    ? baseSchema.extend({
-        url: requireFile 
-          ? z.string().url("Please enter a valid URL").optional()
-          : z.string().url("Please enter a valid URL")
-      })
-    : baseSchema;
+  // Add URL field if allowed
+  if (allowUrl) {
+    if (requireFile) {
+      baseFields.url = z.string().url("Please enter a valid URL").optional();
+    } else {
+      baseFields.url = z.string().url("Please enter a valid URL");
+    }
+  }
 
-  // Add file validation if required
-  const finalSchema = requireFile 
-    ? schemaWithUrl.extend({
-        file: z.instanceof(File)
-      })
-    : schemaWithUrl;
+  // Add file field if required
+  if (requireFile) {
+    baseFields.file = z.instanceof(File, { message: "File is required" });
+  } else {
+    baseFields.file = z.instanceof(File).optional();
+  }
 
-  return finalSchema;
+  return z.object(baseFields);
 };
 
 export const getSubmissionTypeOptions = () => [

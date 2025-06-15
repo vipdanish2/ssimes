@@ -25,9 +25,7 @@ const addMemberSchema = z.object({
 
 const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
   const { user } = useAuth();
-  const { getTeamMembers, addTeamMember, removeTeamMember, isAddingMember, isRemovingMember, teams } = useTeams();
-  const [members, setMembers] = useState<(TeamMember & { user: any })[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { addTeamMember, removeTeamMember, isAddingMember, isRemovingMember, teams } = useTeams();
   const [open, setOpen] = useState(false);
   
   const form = useForm<z.infer<typeof addMemberSchema>>({
@@ -37,6 +35,9 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
     },
   });
 
+  // Use the query result directly
+  const { data: members = [], isLoading: loading, refetch } = useTeams().getTeamMembers(teamId);
+
   const teamData = teams?.find(team => team.id === teamId);
   const isTeamLeader = members.some(
     member => member.user_id === user?.id && member.role === 'leader'
@@ -45,24 +46,6 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
   const memberCount = members.length;
   const canAddMoreMembers = memberCount < 4;
 
-  useEffect(() => {
-    const loadMembers = async () => {
-      if (!teamId) return;
-      
-      try {
-        setLoading(true);
-        const data = await getTeamMembers(teamId);
-        setMembers(data);
-      } catch (error) {
-        console.error('Error loading team members:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadMembers();
-  }, [teamId, getTeamMembers]);
-
   const onSubmit = (values: z.infer<typeof addMemberSchema>) => {
     addTeamMember(
       { teamId, email: values.email },
@@ -70,8 +53,8 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
         onSuccess: () => {
           setOpen(false);
           form.reset();
-          // Reload members after adding a new one
-          getTeamMembers(teamId).then(setMembers);
+          // Refetch members after adding a new one
+          refetch();
         }
       }
     );
@@ -83,8 +66,8 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamId }) => {
         { memberId, teamId },
         {
           onSuccess: () => {
-            // Reload members after removing one
-            getTeamMembers(teamId).then(setMembers);
+            // Refetch members after removing one
+            refetch();
           }
         }
       );
