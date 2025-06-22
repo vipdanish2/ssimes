@@ -5,10 +5,34 @@ import TimelineEditor from '@/components/admin/TimelineEditor';
 import TimelineManagement from '@/components/admin/TimelineManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, Settings, Users, BarChart3 } from 'lucide-react';
+
+const adminSidebarItems = [
+  {
+    title: 'Dashboard',
+    path: '/admin-dashboard',
+    icon: <BarChart3 size={18} />,
+  },
+  {
+    title: 'Timeline Events',
+    path: '/admin-dashboard/timeline',
+    icon: <Calendar size={18} />,
+  },
+  {
+    title: 'User Management',
+    path: '/admin-dashboard/users',
+    icon: <Users size={18} />,
+  },
+  {
+    title: 'Settings',
+    path: '/admin-dashboard/settings',
+    icon: <Settings size={18} />,
+  },
+];
 
 const AdminDashboard = () => {
   return (
-    <DashboardLayout>
+    <DashboardLayout sidebarItems={adminSidebarItems} title="Admin Dashboard">
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>

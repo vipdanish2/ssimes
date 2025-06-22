@@ -48,9 +48,14 @@ const TimelineManagement = () => {
 
   const onSubmit = (values: EventFormValues) => {
     if (editingEvent) {
+      // For updates, we ensure title and event_date are provided
       updateEvent({
         id: editingEvent.id,
-        updates: values,
+        updates: {
+          title: values.title,
+          event_date: values.event_date,
+          description: values.description,
+        },
       });
     } else {
       createEvent(values);
