@@ -51,25 +51,19 @@ const Login = () => {
     }
   };
 
-  // Test login functions
-  const testLogin = async (role: 'student' | 'mentor' | 'admin') => {
-    const testCredentials = {
-      student: { email: 'student@test.com', password: 'password123' },
-      mentor: { email: 'mentor@test.com', password: 'password123' },
-      admin: { email: 'admin@test.com', password: 'password123' },
-    };
-
+  // Test login function for student only
+  const testStudentLogin = async () => {
     setIsLoading(true);
     try {
-      await login(testCredentials[role].email, testCredentials[role].password);
+      await login('student@test.com', 'password123');
       toast({
         title: "Test Login Successful",
-        description: `Logged in as ${role}`,
+        description: "Logged in as student",
       });
     } catch (error: any) {
       toast({
         title: "Test Login Failed",
-        description: `Please create test ${role} account first or use the signup form.`,
+        description: "Please create test student account first or use the signup form.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -143,43 +137,23 @@ const Login = () => {
               </form>
             </Form>
 
-            {/* Test Login Section */}
+            {/* Test Login Section - Student Only */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <TestTube className="h-4 w-4" />
-                <span>Test Login Buttons (for development)</span>
+                <span>Test Login (for development)</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => testLogin('student')}
-                  disabled={isLoading}
-                  className="text-xs"
-                >
-                  Student
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => testLogin('mentor')}
-                  disabled={isLoading}
-                  className="text-xs"
-                >
-                  Mentor
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => testLogin('admin')}
-                  disabled={isLoading}
-                  className="text-xs"
-                >
-                  Admin
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={testStudentLogin}
+                disabled={isLoading}
+                className="w-full text-sm"
+              >
+                Login as Test Student
+              </Button>
               <p className="text-xs text-muted-foreground text-center">
-                Create test accounts using the signup form first
+                Admin/Mentor access is managed through database configuration
               </p>
             </div>
           </CardContent>

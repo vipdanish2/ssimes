@@ -140,7 +140,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Signup function
+  // Signup function - role parameter is kept for compatibility but ignored
+  // All new users are registered as students, roles are assigned by database trigger
   const signup = async (email: string, password: string, name: string, role: UserRole) => {
     setLoading(true);
     try {
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           emailRedirectTo: redirectUrl,
           data: {
             name,
-            role,
+            // Note: role is determined by database trigger based on email
           },
         },
       });
@@ -161,15 +162,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       if (data.user) {
-        // The profile will be created automatically by our trigger
-        // Navigate based on role
-        if (role === 'student') {
-          navigate('/dashboard');
-        } else if (role === 'mentor') {
-          navigate('/mentor-dashboard');
-        } else if (role === 'admin') {
-          navigate('/admin-dashboard');
-        }
+        // Wait a moment for the trigger to create the profile
+        setTimeout(async () => {
+          const profile = await fetchUserProfile(data.user!.id);
+          if (profile) {
+            const actualRole = profile.role as UserRole;
+            
+            // Navigate based on actual assigned role
+            if (actualRole === 'student') {
+              navigate('/dashboard');
+            } else if (actualRole === 'mentor') {
+              navigate('/mentor-dashboard');
+            } else if (actualRole === 'admin') {
+              navigate('/admin-dashboard');
+            }
+          } else {
+            // Default to student dashboard if profile not found
+            navigate('/dashboard');
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error('Signup error:', error);
