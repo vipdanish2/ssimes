@@ -23,6 +23,9 @@ const addMemberSchema = z.object({
   memberName: z.string().min(2, 'Member name must be at least 2 characters').max(100, 'Member name too long'),
 });
 
+type CreateTeamFormData = z.infer<typeof createTeamSchema>;
+type AddMemberFormData = z.infer<typeof addMemberSchema>;
+
 const SimplifiedTeamDashboard: React.FC = () => {
   const {
     userTeam,
@@ -40,18 +43,18 @@ const SimplifiedTeamDashboard: React.FC = () => {
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
 
-  const createTeamForm = useForm<z.infer<typeof createTeamSchema>>({
+  const createTeamForm = useForm<CreateTeamFormData>({
     resolver: zodResolver(createTeamSchema),
     defaultValues: { name: '' },
   });
 
-  const addMemberForm = useForm<z.infer<typeof addMemberSchema>>({
+  const addMemberForm = useForm<AddMemberFormData>({
     resolver: zodResolver(addMemberSchema),
     defaultValues: { memberName: '' },
   });
 
-  const onCreateTeam = (values: z.infer<typeof createTeamSchema>) => {
-    createTeam(values, {
+  const onCreateTeam = (values: CreateTeamFormData) => {
+    createTeam({ name: values.name }, {
       onSuccess: () => {
         setCreateTeamOpen(false);
         createTeamForm.reset();
@@ -59,8 +62,8 @@ const SimplifiedTeamDashboard: React.FC = () => {
     });
   };
 
-  const onAddMember = (values: z.infer<typeof addMemberSchema>) => {
-    addMemberName(values, {
+  const onAddMember = (values: AddMemberFormData) => {
+    addMemberName({ memberName: values.memberName }, {
       onSuccess: () => {
         setAddMemberOpen(false);
         addMemberForm.reset();

@@ -18,19 +18,21 @@ const formSchema = z.object({
   }),
 });
 
+type FormData = z.infer<typeof formSchema>;
+
 const TeamCreation = () => {
   const { createTeam, isCreatingTeam } = useSimplifiedTeams();
   const [open, setOpen] = React.useState(false);
   
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
     },
   });
   
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    createTeam(values, {
+  const onSubmit = async (values: FormData) => {
+    createTeam({ name: values.name }, {
       onSuccess: () => {
         setOpen(false);
         form.reset();
