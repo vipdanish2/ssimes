@@ -19,6 +19,25 @@ export interface TeamMember {
   user?: User;
 }
 
+export interface TeamMemberName {
+  id: string;
+  team_id: string;
+  member_name: string;
+  created_at: string;
+}
+
+export interface Resource {
+  id: string;
+  title: string;
+  description?: string;
+  file_url?: string;
+  resource_type: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Submission {
   id: string;
   team_id: string;

@@ -57,6 +57,50 @@ export type Database = {
         }
         Relationships: []
       }
+      resources: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          file_url: string | null
+          id: string
+          is_active: boolean | null
+          resource_type: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          resource_type?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          resource_type?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resources_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submissions: {
         Row: {
           description: string | null
@@ -97,6 +141,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "submissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_member_names: {
+        Row: {
+          created_at: string | null
+          id: string
+          member_name: string
+          team_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          member_name: string
+          team_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          member_name?: string
+          team_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_member_names_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"

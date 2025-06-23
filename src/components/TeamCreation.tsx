@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTeams } from '@/hooks/useTeams';
+import { useSimplifiedTeams } from '@/hooks/useSimplifiedTeams';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -19,7 +19,7 @@ const formSchema = z.object({
 });
 
 const TeamCreation = () => {
-  const { createTeam, isCreatingTeam } = useTeams();
+  const { createTeam, isCreatingTeam } = useSimplifiedTeams();
   const [open, setOpen] = React.useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -30,22 +30,12 @@ const TeamCreation = () => {
   });
   
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      createTeam(
-        { name: values.name },
-        {
-          onSuccess: () => {
-            setOpen(false);
-            form.reset();
-          },
-          onError: (error) => {
-            console.error("Error creating team:", error);
-          }
-        }
-      );
-    } catch (error) {
-      console.error("Team creation error:", error);
-    }
+    createTeam(values, {
+      onSuccess: () => {
+        setOpen(false);
+        form.reset();
+      },
+    });
   };
 
   return (
@@ -59,7 +49,7 @@ const TeamCreation = () => {
         <DialogHeader>
           <DialogTitle>Create a New Team</DialogTitle>
           <DialogDescription>
-            Create a team with 1-4 members to start submitting your project.
+            Create a team and manage your team members.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
