@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useTimelineEvents } from '@/hooks/useTimelineEvents';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -265,33 +264,6 @@ const TimelineManagement = () => {
       </CardContent>
     </Card>
   );
-
-  function handleEdit(event: any) {
-    setEditingEvent(event);
-    form.setValue('title', event.title);
-    form.setValue('description', event.description || '');
-    form.setValue('event_date', event.event_date.split('T')[0]); // Format for date input
-    setOpen(true);
-  }
-
-  function handleToggleActive(event: any) {
-    updateEvent({
-      id: event.id,
-      updates: { is_active: !event.is_active },
-    });
-  }
-
-  function handleDelete(id: string) {
-    if (window.confirm('Are you sure you want to delete this timeline event?')) {
-      deleteEvent(id);
-    }
-  }
-
-  function handleNewEvent() {
-    setEditingEvent(null);
-    form.reset();
-    setOpen(true);
-  }
 };
 
 export default TimelineManagement;
