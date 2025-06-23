@@ -60,7 +60,14 @@ const TimelineManagement = () => {
         });
       }
     } else {
-      createEvent(values);
+      // For creation, the form validation ensures title and event_date are present
+      // But we need to explicitly type them as required for TypeScript
+      const eventData: { title: string; description?: string; event_date: string } = {
+        title: values.title,
+        event_date: values.event_date,
+        description: values.description || undefined,
+      };
+      createEvent(eventData);
     }
     setOpen(false);
     setEditingEvent(null);
@@ -258,6 +265,33 @@ const TimelineManagement = () => {
       </CardContent>
     </Card>
   );
+
+  function handleEdit(event: any) {
+    setEditingEvent(event);
+    form.setValue('title', event.title);
+    form.setValue('description', event.description || '');
+    form.setValue('event_date', event.event_date.split('T')[0]); // Format for date input
+    setOpen(true);
+  }
+
+  function handleToggleActive(event: any) {
+    updateEvent({
+      id: event.id,
+      updates: { is_active: !event.is_active },
+    });
+  }
+
+  function handleDelete(id: string) {
+    if (window.confirm('Are you sure you want to delete this timeline event?')) {
+      deleteEvent(id);
+    }
+  }
+
+  function handleNewEvent() {
+    setEditingEvent(null);
+    form.reset();
+    setOpen(true);
+  }
 };
 
 export default TimelineManagement;
