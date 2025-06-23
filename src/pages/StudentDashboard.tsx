@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Users, FileText, BookOpen, Calendar, ClipboardCheck } from 'lucide-react';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -45,35 +46,36 @@ const SubmissionsContent = () => (
     <h2 className="project-heading">Project Submissions</h2>
     <CardGrid columns={1}>
       <Card className="dashboard-card">
-        <h3 className="text-lg font-semibold mb-2">Project Proposal</h3>
-        <p className="text-muted-foreground mb-4">Due: October 15, 2025</p>
-        <div className="bg-secondary p-3 rounded-md text-sm mb-4">
-          <p>Submit a 2-3 page proposal outlining your project idea, objectives, methodology, and expected outcomes.</p>
-        </div>
-        <div className="flex justify-end">
-          <div className="bg-emerald-500/20 text-emerald-500 px-3 py-1 rounded-full text-sm">Submitted</div>
-        </div>
-      </Card>
-      
-      <Card className="dashboard-card">
-        <h3 className="text-lg font-semibold mb-2">Progress Report</h3>
-        <p className="text-muted-foreground mb-4">Due: January 10, 2026</p>
-        <div className="bg-secondary p-3 rounded-md text-sm mb-4">
-          <p>Submit a progress report detailing work completed, challenges faced, and next steps.</p>
-        </div>
-        <div className="flex justify-end">
-          <div className="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm">Pending</div>
-        </div>
-      </Card>
-      
-      <Card className="dashboard-card">
-        <h3 className="text-lg font-semibold mb-2">Final Report</h3>
-        <p className="text-muted-foreground mb-4">Due: April 20, 2026</p>
-        <div className="bg-secondary p-3 rounded-md text-sm mb-4">
-          <p>Submit your final project report including all documentation, code, and presentation slides.</p>
-        </div>
-        <div className="flex justify-end">
-          <div className="bg-neutral-500/20 text-neutral-500 px-3 py-1 rounded-full text-sm">Not Started</div>
+        <h3 className="text-lg font-semibold mb-2">Required Submissions</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
+            <div>
+              <p className="font-medium">Abstract</p>
+              <p className="text-sm text-muted-foreground">Upload your project abstract (PDF)</p>
+            </div>
+            <div className="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm">Pending</div>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
+            <div>
+              <p className="font-medium">PowerPoint Presentation</p>
+              <p className="text-sm text-muted-foreground">Upload your presentation slides</p>
+            </div>
+            <div className="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm">Pending</div>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
+            <div>
+              <p className="font-medium">Final Report</p>
+              <p className="text-sm text-muted-foreground">Upload your final project report</p>
+            </div>
+            <div className="bg-neutral-500/20 text-neutral-500 px-3 py-1 rounded-full text-sm">Not Started</div>
+          </div>
+          <div className="flex items-center justify-between p-3 bg-secondary rounded-md">
+            <div>
+              <p className="font-medium">Repository Link</p>
+              <p className="text-sm text-muted-foreground">Provide GitHub repository link</p>
+            </div>
+            <div className="bg-neutral-500/20 text-neutral-500 px-3 py-1 rounded-full text-sm">Not Started</div>
+          </div>
         </div>
       </Card>
     </CardGrid>
@@ -146,6 +148,9 @@ const ResourcesContent = () => (
 const TimelineContent = () => (
   <div className="space-y-6">
     <h2 className="project-heading">Project Timeline</h2>
+    <p className="text-muted-foreground">
+      View important project milestones and deadlines set by your administrators.
+    </p>
     <TimelineDisplay />
   </div>
 );

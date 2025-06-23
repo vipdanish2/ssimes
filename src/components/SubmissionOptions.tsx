@@ -15,40 +15,16 @@ const SubmissionOptions: React.FC<SubmissionOptionsProps> = ({ teamId }) => {
       title: 'Abstract',
       description: 'Upload your project abstract (PDF)',
       icon: <FileText className="h-6 w-6 text-primary" />,
-      acceptFiles: '.pdf',
+      acceptFiles: '.pdf,.doc,.docx',
       allowUrl: false,
     },
     {
       type: 'presentation' as const,
-      title: 'Presentation',
+      title: 'PowerPoint Presentation',
       description: 'Upload your project presentation slides',
       icon: <FileText className="h-6 w-6 text-primary" />,
       acceptFiles: '.pdf,.ppt,.pptx',
       allowUrl: false,
-    },
-    {
-      type: 'video' as const,
-      title: 'Video Explanation',
-      description: 'Link to your video explanation',
-      icon: <Video className="h-6 w-6 text-primary" />,
-      acceptFiles: '.mp4,.mov,.avi',
-      allowUrl: true,
-    },
-    {
-      type: 'github' as const,
-      title: 'GitHub Repository',
-      description: 'Link to your project repository',
-      icon: <Github className="h-6 w-6 text-primary" />,
-      acceptFiles: '',
-      allowUrl: true,
-    },
-    {
-      type: 'demo' as const,
-      title: 'Live Demo',
-      description: 'Link to your live demo',
-      icon: <Monitor className="h-6 w-6 text-primary" />,
-      acceptFiles: '',
-      allowUrl: true,
     },
     {
       type: 'report' as const,
@@ -58,6 +34,30 @@ const SubmissionOptions: React.FC<SubmissionOptionsProps> = ({ teamId }) => {
       acceptFiles: '.pdf,.doc,.docx',
       allowUrl: false,
     },
+    {
+      type: 'github' as const,
+      title: 'Repository Link',
+      description: 'Link to your project repository (GitHub)',
+      icon: <Github className="h-6 w-6 text-primary" />,
+      acceptFiles: '',
+      allowUrl: true,
+    },
+    {
+      type: 'video' as const,
+      title: 'Video Explanation',
+      description: 'Link to your project demo video',
+      icon: <Video className="h-6 w-6 text-primary" />,
+      acceptFiles: '.mp4,.mov,.avi',
+      allowUrl: true,
+    },
+    {
+      type: 'demo' as const,
+      title: 'Live Demo',
+      description: 'Link to your live demo application',
+      icon: <Monitor className="h-6 w-6 text-primary" />,
+      acceptFiles: '',
+      allowUrl: true,
+    },
   ];
 
   return (
@@ -65,7 +65,7 @@ const SubmissionOptions: React.FC<SubmissionOptionsProps> = ({ teamId }) => {
       <CardHeader>
         <CardTitle>Submit Project Materials</CardTitle>
         <CardDescription>
-          Upload or link your project documents and resources
+          Upload your project documents and provide repository links
         </CardDescription>
       </CardHeader>
       <CardContent>

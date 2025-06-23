@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, TestTube } from 'lucide-react';
+import { Loader2, TestTube, Shield } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
@@ -51,7 +51,7 @@ const Login = () => {
     }
   };
 
-  // Test login function for student only
+  // Test login functions
   const testStudentLogin = async () => {
     setIsLoading(true);
     try {
@@ -64,6 +64,24 @@ const Login = () => {
       toast({
         title: "Test Login Failed",
         description: "Please create test student account first or use the signup form.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const testAdminLogin = async () => {
+    setIsLoading(true);
+    try {
+      await login('admin@test.com', 'password123');
+      toast({
+        title: "Test Login Successful",
+        description: "Logged in as admin",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Test Login Failed",
+        description: "Please create test admin account first or use the signup form.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -137,23 +155,36 @@ const Login = () => {
               </form>
             </Form>
 
-            {/* Test Login Section - Student Only */}
+            {/* Test Login Section */}
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                 <TestTube className="h-4 w-4" />
-                <span>Test Login (for development)</span>
+                <span>Demo Login Accounts</span>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={testStudentLogin}
-                disabled={isLoading}
-                className="w-full text-sm"
-              >
-                Login as Test Student
-              </Button>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testStudentLogin}
+                  disabled={isLoading}
+                  className="text-sm"
+                >
+                  <TestTube className="h-3 w-3 mr-1" />
+                  Student
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testAdminLogin}
+                  disabled={isLoading}
+                  className="text-sm"
+                >
+                  <Shield className="h-3 w-3 mr-1" />
+                  Admin
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground text-center">
-                Admin/Mentor access is managed through database configuration
+                Demo credentials: admin@test.com / student@test.com (password: password123)
               </p>
             </div>
           </CardContent>
