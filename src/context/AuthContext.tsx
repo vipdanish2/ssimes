@@ -56,62 +56,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Initialize auth state
+  // Initialize auth state with proper deadlock prevention
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
+    // Set up auth state listener FIRST - this prevents deadlocks
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        if (!mounted) return;
+        
         console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile data
-          const profile = await fetchUserProfile(session.user.id);
-          if (profile) {
-            setUser({
-              id: profile.id,
-              email: profile.email,
-              name: profile.name,
-              role: profile.role as UserRole,
+          // Use setTimeout(0) to defer Supabase calls and prevent deadlock
+          setTimeout(() => {
+            if (!mounted) return;
+            fetchUserProfile(session.user.id).then(profile => {
+              if (!mounted) return;
+              if (profile) {
+                setUser({
+                  id: profile.id,
+                  email: profile.email,
+                  name: profile.name,
+                  role: profile.role as UserRole,
+                });
+              }
+              setLoading(false);
             });
-          }
+          }, 0);
         } else {
           setUser(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
-    // Check for existing session
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
       if (session) {
         setSession(session);
-        fetchUserProfile(session.user.id).then(profile => {
-          if (profile) {
-            setUser({
-              id: profile.id,
-              email: profile.email,
-              name: profile.name,
-              role: profile.role as UserRole,
-            });
-          }
-          setLoading(false);
-        });
+        // Use setTimeout(0) here too for consistency
+        setTimeout(() => {
+          if (!mounted) return;
+          fetchUserProfile(session.user.id).then(profile => {
+            if (!mounted) return;
+            if (profile) {
+              setUser({
+                id: profile.id,
+                email: profile.email,
+                name: profile.name,
+                role: profile.role as UserRole,
+              });
+            }
+            setLoading(false);
+          });
+        }, 0);
       } else {
         setLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Login function
+  // Enhanced login with better error handling
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
+      // Input validation
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -134,27 +158,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
-    } finally {
       setLoading(false);
+      throw error;
     }
   };
 
-  // Signup function - role parameter is kept for compatibility but ignored
-  // All new users are registered as students, roles are assigned by database trigger
+  // Enhanced signup with security improvements
   const signup = async (email: string, password: string, name: string, role: UserRole) => {
     setLoading(true);
     try {
+      // Input validation and sanitization
+      if (!email || !password || !name) {
+        throw new Error('All fields are required');
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters long');
+      }
+
+      // Sanitize inputs
+      const sanitizedEmail = email.trim().toLowerCase();
+      const sanitizedName = name.trim().replace(/[<>]/g, ''); // Basic XSS prevention
+
       const redirectUrl = `${window.location.origin}/`;
       
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: sanitizedEmail,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            name,
-            // Note: role is determined by database trigger based on email
+            name: sanitizedName,
           },
         },
       });
@@ -162,7 +196,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) throw error;
 
       if (data.user) {
-        // Wait a moment for the trigger to create the profile
+        // Wait for the trigger to create the profile
         setTimeout(async () => {
           const profile = await fetchUserProfile(data.user!.id);
           if (profile) {
@@ -177,20 +211,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               navigate('/admin-dashboard');
             }
           } else {
-            // Default to student dashboard if profile not found
             navigate('/dashboard');
           }
         }, 1000);
       }
     } catch (error) {
       console.error('Signup error:', error);
-      throw error;
-    } finally {
       setLoading(false);
+      throw error;
     }
   };
 
-  // Logout function
+  // Enhanced logout with proper cleanup
   const logout = async () => {
     try {
       const { error } = await supabase.auth.signOut();

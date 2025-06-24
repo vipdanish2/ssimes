@@ -13,7 +13,7 @@ import { Submission } from '@/types';
 import { createSubmissionSchema } from '@/utils/submissionFormSchema';
 import { useToast } from '@/hooks/use-toast';
 
-import FileUploadField from '@/components/form/FileUploadField';
+import SecureFileUpload from '@/components/form/SecureFileUpload';
 import UrlField from '@/components/form/UrlField';
 import SubmissionProgress from '@/components/form/SubmissionProgress';
 import SubmissionButton from '@/components/form/SubmissionButton';
@@ -80,8 +80,8 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     } = {
       teamId,
       type,
-      title: values.title,
-      description: values.description || '',
+      title: values.title.trim(), // Basic sanitization
+      description: (values.description || '').trim(),
       file: values.file,
       url: allowUrl && 'url' in values ? (values.url as string) : undefined,
     };
@@ -170,7 +170,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
               />
               
               {requireFile && (
-                <FileUploadField
+                <SecureFileUpload
                   form={form}
                   label="File Upload"
                   description={`Upload your ${type} file (max 20MB)`}
