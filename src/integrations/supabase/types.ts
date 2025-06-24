@@ -209,6 +209,50 @@ export type Database = {
           },
         ]
       }
+      team_names: {
+        Row: {
+          created_at: string | null
+          id: string
+          member1_name: string
+          member2_name: string | null
+          member3_name: string | null
+          member4_name: string | null
+          team_name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          member1_name: string
+          member2_name?: string | null
+          member3_name?: string | null
+          member4_name?: string | null
+          team_name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          member1_name?: string
+          member2_name?: string | null
+          member3_name?: string | null
+          member4_name?: string | null
+          team_name?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_names_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       teams: {
         Row: {
           created_at: string
